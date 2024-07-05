@@ -1,9 +1,15 @@
--- made by 0megaa. / Omega. in late 2023 (?) i don't really remember. i guess have fun?
+-- made by 0megaa. / Omega. in mid~ 2023 (?) i don't really remember. i guess have fun?
+
+--[[
+a little tweak made in 2024.
+]]
 
 local admin = {
 	settings = {
 		prefixes = {'+','owo '},
 		separators = {'|'},
+
+		hide_commands = true
 	},
 	
 	commands = {},
@@ -11,7 +17,7 @@ local admin = {
 	func = {}
 }
 
-admin.func.add_command = function(name,aliases,description,func)
+admin.func.add_command = function(name,aliases,description,arguments,func)
 	assert(typeof(name) == 'string', 'tried to run admin.func.add_command with an invalid name')
 	assert(typeof(func) == 'function', 'tried to run admin.func.add_command with an invalid function')
 
@@ -19,6 +25,7 @@ admin.func.add_command = function(name,aliases,description,func)
 		name = name,
 		aliases = typeof(aliases) == 'table' and aliases or {aliases},
 		description = typeof(description) == 'string' and description or "there isn't a description for this command",
+		args = typeof(arguments) == 'table' and arguments or {arguments},
 		func = func
 	}
 end
@@ -69,28 +76,37 @@ admin.func.run_command = function(str)
 		if command_exists == false and command == nil then
 			continue
 		end
+
+		if #args < tonumber(#command.args) + 1 then
+			continue
+		end
 		
 		local suc,err = pcall(function()
 			command.func(args)
 		end)
 		
 		if err then
-			warn('failed to run a command\ncommand name: ' .. tostring(command.name) .. '\nargs: ' .. table.concat(args, ', ') .. '\nerror: ' .. tostring(err))
+			warn('failed to run a command\ncommand name: '..tostring(command.name)..'\nargs: '..table.concat(args, ', ')..'\nerror: ' .. tostring(err))
 		end
 	end
 end
 
-admin.func.add_command('commands', {'cmds'}, 'lists all the commands that are available', function()
+admin.func.add_command('commands', {'cmds'}, 'lists all the commands that are available', nil, function()
 	local x = 0 
 
 	for name, data in pairs(admin.commands) do
-		print("command name: " .. data.name)
-		print("aliases: " .. table.concat(data.aliases, ", "))
-		print("description: " .. data.description)
+		print("command name: "..data.name)
+		print("aliases: "..table.concat(data.aliases, ", "))
+		print("description: "..data.description)
+		print('arguments: '..(data.arguments ~= nil and data.arguments >= 1) and table.concat(data.arguments, ", ") or 'argumentless')
 		x += 1
 	end
 
 	print("listed all the commands: "..tostring(x))
+end)
+
+game:GetService('Players').LocalPlayer.Chatted:Connect(function(msg) -- update this later please
+	admin.func.run_command(msg)
 end)
 
 return admin 
