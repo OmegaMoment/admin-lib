@@ -17,7 +17,7 @@ local admin = {
 	func = {}
 }
 
-admin.func.add_command = function(name,aliases,description,arguments,func)
+admin.func.add_command = function(name, aliases, description, arguments, func)
 	assert(typeof(name) == 'string', 'tried to run admin.func.add_command with an invalid name')
 	assert(typeof(func) == 'function', 'tried to run admin.func.add_command with an invalid function')
 
@@ -25,7 +25,7 @@ admin.func.add_command = function(name,aliases,description,arguments,func)
 		name = name,
 		aliases = typeof(aliases) == 'table' and aliases or {aliases},
 		description = typeof(description) == 'string' and description or "there isn't a description for this command",
-		args = typeof(arguments) == 'table' and arguments or {arguments},
+		args = typeof(arguments) == 'table' and arguments or (arguments == nil and {} or {arguments}),
 		func = func
 	}
 end
@@ -69,15 +69,15 @@ admin.func.run_command = function(str)
 		return
 	end
 	
-	for _,part in pairs(parts) do
+	for _, part in pairs(parts) do
 		local args = part:split(' ')
-		local command_exists,command = admin.func.is_command(args[1])
+		local command_exists, command = admin.func.is_command(args[1])
 		
-		if command_exists == false and command == nil then
+		if not command_exists then
 			continue
 		end
 
-		if #args < tonumber(#command.args) + 1 then
+		if #args < #command.args + 1 then
 			continue
 		end
 		
