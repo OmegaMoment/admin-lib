@@ -1,4 +1,3 @@
-local Players = game:GetService("Players")
 -- made by 0megaa. / Omega. in mid~ 2023 (?) i don't really remember. i guess have fun?
 
 --[[
