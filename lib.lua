@@ -16,8 +16,8 @@ local admin = {
 }
 
 admin.add_command = function(name, aliases, description, arguments, func)
-	assert(typeof(name) == 'string', 'tried to run admin.func.add_command with an invalid name')
-	assert(typeof(func) == 'function', 'tried to run admin.func.add_command with an invalid function')
+	assert(typeof(name) == 'string', 'tried to run admin.add_command with an invalid name')
+	assert(typeof(func) == 'function', 'tried to run admin.add_command with an invalid function')
 
 	admin.commands[name] = {
 		name = name,
@@ -29,7 +29,7 @@ admin.add_command = function(name, aliases, description, arguments, func)
 end
 
 admin.is_command = function(str)
-	assert(typeof(str) == 'string', 'tried to run admin.func.is_command with an invalid string')
+	assert(typeof(str) == 'string', 'tried to run admin.is_command with an invalid string')
 
 	for _, command in pairs(admin.commands) do
 		if command.name:lower() == str:lower() or table.find(command.aliases, str:lower()) then
@@ -41,7 +41,7 @@ admin.is_command = function(str)
 end
 
 admin.separate_command = function(str)
-	assert(typeof(str) == 'string', 'tried to run admin.func.separate_command with an invalid string')
+	assert(typeof(str) == 'string', 'tried to run admin.separate_command with an invalid string')
 	local parts = {}
 	local separators = typeof(admin.settings.separators) == 'table' and table.concat(admin.settings.separators, '') or admin.settings.separators
 
@@ -60,7 +60,7 @@ admin.separate_command = function(str)
 end
 
 admin.run_command = function(str)
-	assert(typeof(str) == 'string', 'tried to run admin.func.run_command with an invalid string')
+	assert(typeof(str) == 'string', 'tried to run admin.run_command with an invalid string')
 	local parts = admin.separate_command(str)
 	
 	if #parts <= 0 then
