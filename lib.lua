@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 -- made by 0megaa. / Omega. in mid~ 2023 (?) i don't really remember. i guess have fun?
 
 --[[
@@ -13,11 +14,9 @@ local admin = {
 	},
 	
 	commands = {},
-
-	func = {}
 }
 
-admin.func.add_command = function(name, aliases, description, arguments, func)
+admin.add_command = function(name, aliases, description, arguments, func)
 	assert(typeof(name) == 'string', 'tried to run admin.func.add_command with an invalid name')
 	assert(typeof(func) == 'function', 'tried to run admin.func.add_command with an invalid function')
 
@@ -25,12 +24,12 @@ admin.func.add_command = function(name, aliases, description, arguments, func)
 		name = name,
 		aliases = typeof(aliases) == 'table' and aliases or {aliases},
 		description = typeof(description) == 'string' and description or "there isn't a description for this command",
-		args = typeof(arguments) == 'table' and arguments or (arguments == nil and {} or {arguments}),
+		arguments = typeof(arguments) == 'table' and arguments or (arguments == nil and {} or {arguments}),
 		func = func
 	}
 end
 
-admin.func.is_command = function(str)
+admin.is_command = function(str)
 	assert(typeof(str) == 'string', 'tried to run admin.func.is_command with an invalid string')
 
 	for _, command in pairs(admin.commands) do
@@ -42,7 +41,7 @@ admin.func.is_command = function(str)
 	return false
 end
 
-admin.func.separate_command = function(str)
+admin.separate_command = function(str)
 	assert(typeof(str) == 'string', 'tried to run admin.func.separate_command with an invalid string')
 	local parts = {}
 	local separators = typeof(admin.settings.separators) == 'table' and table.concat(admin.settings.separators, '') or admin.settings.separators
@@ -61,9 +60,9 @@ admin.func.separate_command = function(str)
 	return parts
 end
 
-admin.func.run_command = function(str)
+admin.run_command = function(str)
 	assert(typeof(str) == 'string', 'tried to run admin.func.run_command with an invalid string')
-	local parts = admin.func.separate_command(str)
+	local parts = admin.separate_command(str)
 	
 	if #parts <= 0 then
 		return
@@ -71,15 +70,24 @@ admin.func.run_command = function(str)
 	
 	for _, part in pairs(parts) do
 		local args = part:split(' ')
-		local command_exists, command = admin.func.is_command(args[1])
+		local command_exists, command = admin.is_command(args[1])
 		
 		if not command_exists then
 			continue
 		end
 
-		if #args < #command.args + 1 then
-			continue
+		if #args < #command.arguments + 1 then
+            continue
 		end
+
+        local adjusted_args = {args[1]} -- i don't care if this is stupid.
+
+        for i = 2, #command.arguments do
+            table.insert(adjusted_args, args[i])
+        end
+
+        adjusted_args[#command.arguments + 1] = table.concat(args, ' ', #command.arguments + 1)
+        args = adjusted_args
 		
 		local suc,err = pcall(function()
 			command.func(args)
@@ -91,22 +99,22 @@ admin.func.run_command = function(str)
 	end
 end
 
-admin.func.add_command('commands', {'cmds'}, 'lists all the commands that are available', nil, function()
+admin.add_command('commands', {'cmds'}, 'lists all the commands that are available', nil, function()
 	local x = 0 
 
 	for name, data in pairs(admin.commands) do
 		print("command name: "..data.name)
 		print("aliases: "..table.concat(data.aliases, ", "))
 		print("description: "..data.description)
-		print('arguments: '..(data.arguments ~= nil and data.arguments >= 1) and table.concat(data.arguments, ", ") or 'argumentless')
+		print('arguments: '..if data.arguments ~= nil and #data.arguments >= 1 then table.concat(data.arguments,' '):gsub("([^ ]+)", "<%1>") else 'argumentless') -- literally was like "yeah, no i can't be bothered with and/or
 		x += 1
 	end
 
 	print("listed all the commands: "..tostring(x))
 end)
 
-game:GetService('Players').LocalPlayer.Chatted:Connect(function(msg) -- update this later please
-	admin.func.run_command(msg)
+game:GetService('Players').LocalPlayer.Chatted:Connect(function(message, recipient)
+    admin.run_command(message)
 end)
 
-return admin 
+return admin
