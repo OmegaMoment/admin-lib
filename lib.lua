@@ -9,7 +9,7 @@ local admin = {
 		prefixes = {'+','owo '},
 		separators = {'|'},
 
-		hide_commands = true
+		--hide_commands = true -- later
 	},
 	
 	commands = {},
