@@ -105,7 +105,7 @@ admin.add_command('commands', {'cmds'}, 'lists all the commands that are availab
 		print("command name: "..data.name)
 		print("aliases: "..table.concat(data.aliases, ", "))
 		print("description: "..data.description)
-		print('arguments: '..if data.arguments ~= nil and #data.arguments >= 1 then table.concat(data.arguments,' '):gsub("([^ ]+)", "<%1>") else 'argumentless') -- literally was like "yeah, no i can't be bothered with and/or
+		print('arguments: '..if data.arguments ~= nil and #data.arguments >= 1 then table.concat(data.arguments,' '):gsub("([^ ]+)", "<%1>") else 'argumentless') -- literally was like "yeah, no i can't be bothered with and/or"
 		x += 1
 	end
 
