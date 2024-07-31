@@ -221,7 +221,7 @@ main.get_player = function(str,speaker)  -- similar logic to the run command fun
 
 		for _,player in pairs(found_players) do
 			-- level check
-			if main.settings.run_commands_on_higher_ranked and level > main.get_level(player) then
+			if not main.settings.run_commands_on_higher_ranked and level < main.get_level(player) then
 				continue
 			end
 			
