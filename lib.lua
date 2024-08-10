@@ -1,16 +1,20 @@
--- i hope this is readable enough (expect some changes tmrw or so)
--- your boy omega was here >.<
+-- made by Omega.(@0megaa.) (discord)
+-- 'your boy omegaaa >_< ヾ(≧▽≦*)o' -- somebody
+-- let's all love lain.
+-- add your own file system, i am lazy. / i couldn't test this due to solara being down and my country being annoying. BUT i will test it and fix any bugs that are relevant tmrw.
 
-local players = game:GetService('Players')
+local game = game
 local table = table
 local string = string
 local typeof = typeof
+local tostring = tostring
+local players = game:GetService('Players')
 
 local main = {
 	settings = {
 		prefix = {'navi, ','owo ','uwu ','+'},
 		splitter = '|',
-		system_name = [[C:/]], -- this is for when you call the run_command function from the script
+		system_name = [[C:\user\]]..players.LocalPlayer.Name, -- this is for when you call the run_command function from the script
 		run_commands_on_higher_ranked = false, -- can you run commands on people with higher ranks than you
 
 		levels = {
@@ -41,7 +45,7 @@ main.add_command = function(name, aliases, arguments, description, level, func)
 	}
 end
 
-main.is_command = function(str)
+main.is_command = function(str) -- returns the command state, the command
 	assert(typeof(str) == 'string', 'tried to find a command while using an invalid string')
 
 	for _, command in pairs(main.commands) do
@@ -53,7 +57,21 @@ main.is_command = function(str)
 	return false
 end
 
-main.get_level = function(player)
+main.remove_command = function(command)
+	local is_command,command = main.is_command(command)
+	assert(is_command, "can't remove an invalid command")
+	table.remove(main.commands,command)
+end
+
+main.overwrite_command = function(command,func)
+	local is_command,command = main.is_command(command)
+	assert(is_command, "can't overwrite an invalid command")
+	assert(typeof(func) == 'function', "invalid function")
+	
+	command.func = func
+end
+
+main.get_level = function(player) -- returns the level, level name, player
 	if not (typeof(player) == 'Instance' and player:IsA('Player')) then
 		return math.huge, main.settings.system_name, players.LocalPlayer
 	end
@@ -90,6 +108,20 @@ main.set_level = function(player, level)
 			break
 		end
 	end
+end
+
+main.format_arguments = function(tbl, starting, ending) -- for example main.for_arguments(tbl,'<','>')
+    assert(typeof(tbl) == 'table', 'tried to run format an invalid table of arguments')
+    assert(typeof(starting) == 'string', 'invalid starting delimiter')
+    assert(typeof(ending) == 'string', 'invalid ending delimiter')
+
+    local formatted = {}
+
+    for _, argument in pairs(tbl) do
+        table.insert(formatted, starting..tostring(argument)..ending)
+    end
+
+    return table.concat(formatted, ' ')
 end
 
 main.run_command = function(str, speaker)
@@ -158,9 +190,10 @@ main.run_command = function(str, speaker)
 				command_name = command.name,
 				runner_name = (typeof(speaker) == 'Instance' and speaker:IsA('Player')) and speaker.Name or speaker,
 				runner_id = (typeof(speaker) == 'Instance' and speaker:IsA('Player')) and speaker.UserId or 0,
-				runner_level = level..' / '..level_name,
-				required_args = (command.arguments and #command.arguments ~= 0) and table.concat(command.arguments,', ') or 'none', -- <args 1> <args 2>
-				used_args = (arguments and #arguments ~= 0) and table.concat(arguments,', ') or 'none', -- <args 1> <args 2>
+				runner_level = level..' - '..level_name,
+				ran_string = command.name..' '..table.concat(arguments,' '),
+				required_args = (command.arguments and #command.arguments ~= 0) and main.format_arguments(command.arguments,'<','>') or 'none',
+				used_args = (arguments and #arguments ~= 0) and main.format_arguments(arguments,'<','>') or 'none',
 				ran_at = os.date('%m/%d/%Y %H:%M:%S')
 			}
 		else
@@ -207,7 +240,14 @@ main.get_player = function(str,speaker)  -- similar logic to the run command fun
 		part = negate and string.sub(part, 2) or part
 
 		-- case checking
-		local found_players = table.find(main.player_cases,part) and main.player_cases[table.find(main.player_cases,part)](given_player,part) or nil
+		local found_players = nil
+
+		for playercase,func in pairs(main.player_cases) do -- changed to this method
+			if string.match(part,playercase) or playercase == part then
+				found_players = func()
+				break
+			end
+		end
 
 		if found_players == nil then
 			found_players = {}
@@ -236,6 +276,36 @@ main.get_player = function(str,speaker)  -- similar logic to the run command fun
 	end
 
 	return returns
+end
+
+-- hooks
+
+main.create_hooks = function()
+	for _,player in pairs(players:GetPlayers()) do
+		main.hooks[player.UserId] = player.Chatted:Connect(function(message)
+			main.run_command(message,player)
+		end)
+	end
+
+	main.hooks['playeradded'] = players.PlayerAdded:Connect(function(player)
+		main.hooks[player.UserId] = player.Chatted:Connect(function(message)
+			main.run_command(message,player)
+		end)
+	end)
+
+	main.hooks['playerremoving'] = players.PlayerRemoving:Connect(function(player)
+		local found = table.find(main.hooks,player.UserId)
+
+		if found then
+			table.remove(main.hooks,found)
+		end
+	end)
+end
+
+main.disconnect_hooks = function()
+	for i,v in pairs(main.hooks) do
+		v:Disconnect()
+	end
 end
 
 return main
