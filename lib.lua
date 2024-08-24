@@ -127,7 +127,6 @@ end
 main.run_command = function(str, speaker)
 	assert(typeof(str) == 'string', 'tried to run a command string with an invalid string')
 	speaker = typeof(speaker) == 'Instance' and speaker:IsA('Player') and speaker or main.settings.system_name
-	print(speaker)
 	local level,level_name = main.get_level(speaker)
 
 	local parts = {}
