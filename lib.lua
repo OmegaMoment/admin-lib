@@ -282,12 +282,20 @@ end
 main.create_hooks = function()
 	for _,player in pairs(players:GetPlayers()) do
 		main.hooks[player.UserId] = player.Chatted:Connect(function(message)
+			if string.sub(message, 1, 2) == '/e' or string.sub(message, 1, 2) == '/w' then
+				message = string.sub(message, 3)
+			end
+				
 			main.run_command(message,player)
 		end)
 	end
 
 	main.hooks['playeradded'] = players.PlayerAdded:Connect(function(player)
 		main.hooks[player.UserId] = player.Chatted:Connect(function(message)
+			if string.sub(message, 1, 2) == '/e' or string.sub(message, 1, 2) == '/w' then
+				message = string.sub(message, 3)
+			end
+					
 			main.run_command(message,player)
 		end)
 	end)
